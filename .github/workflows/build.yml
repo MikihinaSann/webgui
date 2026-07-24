@@ -31,6 +31,9 @@ jobs:
           - version: 26.2-neoforge
             java: '25'
             beta: true
+          - version: 26.1.2-neoforge
+            java: '25'
+            beta: true
     steps:
       - uses: actions/checkout@v4
 

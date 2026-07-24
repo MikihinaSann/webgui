@@ -79,7 +79,7 @@ public final class WebviewPageToClientBridge {
                     if (mc.currentScreen instanceof WebViewScreen) {
                         mc.currentScreen.close();
                     //? } else {
-                    /*//? if >=26 {
+                    /*//? if >=26.2-neoforge {
                     if (mc.gui.screen() instanceof WebViewScreen) {
                         mc.gui.screen().onClose();
                     //? } else {

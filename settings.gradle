@@ -16,9 +16,10 @@ stonecutter {
     centralScript = 'build.gradle'
 
     create(rootProject) {
-        // 26.2-neoforge is BETA: MC 26.2 + NeoForge beta; no Fabric target yet
-        // because Yarn mappings for 26.x are not published.
+        // MC 26 (NeoForge only — Yarn mappings for 26.x are not published).
+        // 26.2 is still a NeoForge beta; 26.1 is the released line.
         version '26.2-neoforge',    '26.2-neoforge'
+        version '26.1.2-neoforge',  '26.1.2-neoforge'
         version '1.21.11-fabric',   '1.21.11-fabric'
         version '1.21.11-neoforge', '1.21.11-neoforge'
         version '1.21.1-fabric',    '1.21.1-fabric'
