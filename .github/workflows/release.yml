@@ -60,15 +60,26 @@ jobs:
         if: steps.check.outputs.build == 'true'
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: |
+            21
+            25
           distribution: temurin
           cache: gradle
 
-      - name: Build all versions
+      # Stable targets gate the release; a beta build failure must never block them.
+      - name: Build stable versions
         if: steps.check.outputs.build == 'true'
         run: |
           chmod +x gradlew
-          ./gradlew build --no-daemon
+          ./gradlew :1.20.1-fabric:build :1.21.1-fabric:build :1.21.11-fabric:build \
+                    :1.21.1-neoforge:build :1.21.11-neoforge:build --no-daemon
+        env:
+          GRADLE_OPTS: -Xmx2g
+
+      - name: Build 26.2 NeoForge (beta)
+        if: steps.check.outputs.build == 'true'
+        continue-on-error: true
+        run: ./gradlew :26.2-neoforge:build --no-daemon
         env:
           GRADLE_OPTS: -Xmx2g
 
@@ -163,6 +174,25 @@ jobs:
           game-versions: '1.21.11'
           changelog-file: CHANGELOG.md
           files: versions/1.21.11-neoforge/build/libs/!(*-@(dev|sources|javadoc)).jar
+
+      # Beta target (Minecraft 26). Kept out of the verify gate below and allowed
+      # to fail (e.g. Modrinth may not list the game version yet) without blocking
+      # the stable release.
+      - name: Publish 26.2 NeoForge to Modrinth (beta)
+        if: steps.check.outputs.build == 'true'
+        continue-on-error: true
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: tDw1xQja
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-featured: false
+          name: WebGUI ${{ steps.meta.outputs.version }} (26.2 NeoForge, beta)
+          version: ${{ steps.meta.outputs.version }}+mc26.2-neoforge
+          version-type: beta
+          loaders: neoforge
+          game-versions: '26.2'
+          changelog-file: CHANGELOG.md
+          files: versions/26.2-neoforge/build/libs/!(*-@(dev|sources|javadoc)).jar
 
       # mc-publish can report success without actually creating a version (e.g.
       # a token lacking the "Create versions" scope). Confirm every version is
