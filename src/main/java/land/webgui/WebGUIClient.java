@@ -171,14 +171,23 @@ public final class WebGUIClient
     private static void handleOpenPayload(Minecraft client, int mode, String url) {
         if (!MCEF.isInitialized()) {
             if (client.player != null) {
+                //? if >=26 {
+                client.player.sendSystemMessage(
+                        net.minecraft.network.chat.Component.translatable("message.webgui.mcef_not_ready"));
+                //? } else {
                 client.player.displayClientMessage(
                         net.minecraft.network.chat.Component.translatable("message.webgui.mcef_not_ready"), false);
+                //? }
             }
             return;
         }
         String u = url == null || url.isBlank() ? StartUrls.primary() : url;
         if (mode == WebviewNetworking.MODE_GUI) {
+            //? if >=26 {
+            client.gui.setScreen(new WebViewScreen(u));
+            //? } else {
             client.setScreen(new WebViewScreen(u));
+            //? }
         } else if (mode == WebviewNetworking.MODE_HUD) {
             WebHudOverlay.applyServerOpen(client, u);
         }

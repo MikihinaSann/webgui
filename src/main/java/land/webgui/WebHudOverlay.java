@@ -22,7 +22,11 @@ import net.minecraft.text.Text;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 //? }
+//? if >=26 {
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+//? } else {
 import net.minecraft.client.gui.GuiGraphics;
+//? }
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;*/
@@ -62,7 +66,11 @@ public final class WebHudOverlay {
         //? if fabric {
         boolean hasGui1 = client.currentScreen != null;
         //? } else {
-        /*boolean hasGui1 = client.screen != null;*/
+        /*//? if >=26 {
+        boolean hasGui1 = client.gui.screen() != null;
+        //? } else {
+        boolean hasGui1 = client.screen != null;
+        //? }*/
         //? }
         if (!hudVisible || !hudInteractive || hasGui1) {
             return false;
@@ -84,7 +92,11 @@ public final class WebHudOverlay {
         //? if fabric {
         boolean hasGui2 = client.currentScreen != null;
         //? } else {
-        /*boolean hasGui2 = client.screen != null;*/
+        /*//? if >=26 {
+        boolean hasGui2 = client.gui.screen() != null;
+        //? } else {
+        boolean hasGui2 = client.screen != null;
+        //? }*/
         //? }
         if (!hudVisible || hasGui2) {
             return false;
@@ -106,7 +118,11 @@ public final class WebHudOverlay {
         //? if fabric {
         if (client == null || client.currentScreen != null) {
         //? } else {
-        /*if (client == null || client.screen != null) {*/
+        /*//? if >=26 {
+        if (client == null || client.gui.screen() != null) {
+        //? } else {
+        if (client == null || client.screen != null) {
+        //? }*/
         //? }
             return false;
         }
@@ -128,7 +144,11 @@ public final class WebHudOverlay {
         //? if fabric {
         if (client.currentScreen != null) {
         //? } else {
-        /*if (client.screen != null) {*/
+        /*//? if >=26 {
+        if (client.gui.screen() != null) {
+        //? } else {
+        if (client.screen != null) {
+        //? }*/
         //? }
             return;
         }
@@ -171,9 +191,17 @@ public final class WebHudOverlay {
         //? if fabric {
         if (client.currentScreen != null) {
         //? } else {
-        /*if (client.screen != null) {*/
+        /*//? if >=26 {
+        if (client.gui.screen() != null) {
+        //? } else {
+        if (client.screen != null) {
+        //? }*/
         //? }
+            //? if >=26 {
+            /*client.gui.setScreen(null);*/
+            //? } else {
             client.setScreen(null);
+            //? }
         }
         restoreHudAfterGuiClose = false;
         hudVisible = true;
@@ -193,7 +221,11 @@ public final class WebHudOverlay {
         //? if fabric {
         if (client.currentScreen instanceof WebViewScreen) {
         //? } else {
-        /*if (client.screen instanceof WebViewScreen) {*/
+        /*//? if >=26 {
+        if (client.gui.screen() instanceof WebViewScreen) {
+        //? } else {
+        if (client.screen instanceof WebViewScreen) {
+        //? }*/
         //? }
             return;
         }
@@ -236,7 +268,11 @@ public final class WebHudOverlay {
         //? if fabric {
         boolean hasGui7 = client.currentScreen != null;
         //? } else {
-        /*boolean hasGui7 = client.screen != null;*/
+        /*//? if >=26 {
+        boolean hasGui7 = client.gui.screen() != null;
+        //? } else {
+        boolean hasGui7 = client.screen != null;
+        //? }*/
         //? }
         if (!hudVisible || hasGui7) {
             return;
@@ -357,7 +393,11 @@ public final class WebHudOverlay {
     //? } else {
     /*//? if >=1.20.5 {
     private static void onHudRender(RenderGuiEvent.Post event) {
+        //? if >=26 {
+        GuiGraphicsExtractor context = event.getGuiGraphics();
+        //? } else {
         GuiGraphics context = event.getGuiGraphics();
+        //? }
     //? } else {
     private static void onHudRender(RenderGuiEvent.Post event) {
         GuiGraphics context = event.getGuiGraphics();
@@ -492,8 +532,13 @@ public final class WebHudOverlay {
     //? } else {
     /*private static void notifyMcefMissing(Minecraft client) {
         if (client.player != null) {
+            //? if >=26 {
+            client.player.sendSystemMessage(
+                    Component.translatable("message.webgui.mcef_not_ready"));
+            //? } else {
             client.player.displayClientMessage(
                     Component.translatable("message.webgui.mcef_not_ready"), false);
+            //? }
         }
     }*/
     //? }

@@ -21,7 +21,11 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 //? } else {
-/*import net.minecraft.client.gui.GuiGraphics;
+/*//? if >=26 {
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+//? } else {
+import net.minecraft.client.gui.GuiGraphics;
+//? }
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 //? if >=1.21.5 {
@@ -63,7 +67,11 @@ public class WebViewScreen extends Screen {
             }
             //? } else {
             /*if (this.minecraft != null && this.minecraft.player != null) {
+                //? if >=26 {
+                this.minecraft.player.sendSystemMessage(Component.translatable("message.webgui.mcef_not_ready"));
+                //? } else {
                 this.minecraft.player.displayClientMessage(Component.translatable("message.webgui.mcef_not_ready"), false);
+                //? }
             }*/
             //? }
             //? if fabric {
@@ -211,7 +219,11 @@ public class WebViewScreen extends Screen {
     }
     //? } else {
     /*@Override
+    //? if >=26 {
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    //? } else {
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    //? }
         if (browser != null && guiPageReady && browser.isTextureReady()) {
             //? if >=1.21.5 {
             net.minecraft.resources.Identifier textureLocation = browser.getTextureIdentifier();
@@ -239,7 +251,11 @@ public class WebViewScreen extends Screen {
     }
     //? } else {
     /*@Override
+    //? if >=26 {
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+    //? } else {
     public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    //? }
         // no darkening - web fills the entire screen
     }*/
     //? }
@@ -400,7 +416,11 @@ public class WebViewScreen extends Screen {
         if (browser == null || !input.isAllowedChatCharacter()) return false;
         int cp = input.codepoint();
         if (cp <= 0 || cp > 0xFFFF) return false;
+        //? if >=26 {
+        browser.sendKeyTyped((char) cp, 0);
+        //? } else {
         browser.sendKeyTyped((char) cp, input.modifiers());
+        //? }
         browser.setFocus(true);
         return true;
     }*/

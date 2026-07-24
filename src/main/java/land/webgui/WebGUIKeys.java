@@ -100,7 +100,11 @@ public final class WebGUIKeys {
             if (!WebHudOverlay.isHudVisible() || client.currentScreen != null) {
         //? } else {
         /*while (hudInteractive.consumeClick()) {
-            if (!WebHudOverlay.isHudVisible() || client.screen != null) {*/
+            //? if >=26 {
+            if (!WebHudOverlay.isHudVisible() || client.gui.screen() != null) {
+            //? } else {
+            if (!WebHudOverlay.isHudVisible() || client.screen != null) {
+            //? }*/
         //? }
                 continue;
             }
@@ -123,16 +127,28 @@ public final class WebGUIKeys {
     }
     //? } else {
     /*private static void tryOpenMainMenu(Minecraft client) {
+        //? if >=26 {
+        if (client.gui.screen() instanceof WebViewScreen) {
+        //? } else {
         if (client.screen instanceof WebViewScreen) {
+        //? }
             return;
         }
         if (!MCEF.isInitialized()) {
             if (client.player != null) {
+                //? if >=26 {
+                client.player.sendSystemMessage(Component.translatable("message.webgui.mcef_not_ready"));
+                //? } else {
                 client.player.displayClientMessage(Component.translatable("message.webgui.mcef_not_ready"), false);
+                //? }
             }
             return;
         }
+        //? if >=26 {
+        client.gui.setScreen(new WebViewScreen(WebGUIMainMenuUrl.getUrl()));
+        //? } else {
         client.setScreen(new WebViewScreen(WebGUIMainMenuUrl.getUrl()));
+        //? }
     }*/
     //? }
 }
