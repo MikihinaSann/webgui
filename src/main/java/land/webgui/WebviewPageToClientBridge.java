@@ -79,8 +79,13 @@ public final class WebviewPageToClientBridge {
                     if (mc.currentScreen instanceof WebViewScreen) {
                         mc.currentScreen.close();
                     //? } else {
-                    /*if (mc.screen instanceof WebViewScreen) {
-                        mc.screen.onClose();*/
+                    /*//? if >=26 {
+                    if (mc.gui.screen() instanceof WebViewScreen) {
+                        mc.gui.screen().onClose();
+                    //? } else {
+                    if (mc.screen instanceof WebViewScreen) {
+                        mc.screen.onClose();
+                    //? }*/
                     //? }
                     //? if fabric {
                     } else if (WebHudOverlay.isHudVisible()) {

@@ -67,7 +67,11 @@ public class WebViewScreen extends Screen {
             }
             //? } else {
             /*if (this.minecraft != null && this.minecraft.player != null) {
+                //? if >=26 {
+                this.minecraft.player.sendSystemMessage(Component.translatable("message.webgui.mcef_not_ready"));
+                //? } else {
                 this.minecraft.player.displayClientMessage(Component.translatable("message.webgui.mcef_not_ready"), false);
+                //? }
             }*/
             //? }
             //? if fabric {
@@ -412,7 +416,11 @@ public class WebViewScreen extends Screen {
         if (browser == null || !input.isAllowedChatCharacter()) return false;
         int cp = input.codepoint();
         if (cp <= 0 || cp > 0xFFFF) return false;
+        //? if >=26 {
+        browser.sendKeyTyped((char) cp, 0);
+        //? } else {
         browser.sendKeyTyped((char) cp, input.modifiers());
+        //? }
         browser.setFocus(true);
         return true;
     }*/
