@@ -8,7 +8,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 //? } else {
 /*import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHandler;*/
+import net.minecraft.client.MouseHandler;
+//? if >=26 {
+import net.minecraft.client.input.MouseButtonInfo;
+//? }*/
 //? }
 //? if >=1.21.5 {
 //? if fabric {
@@ -33,8 +36,13 @@ public class MouseMixin {
     @Inject(method = "onMouseButton", at = @At("HEAD"), cancellable = true)
     private void webgui$cancelVanillaForWebHudPseudoGui(long window, MouseInput input, int action, CallbackInfo ci) {
     //? } else {
-    /*@Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
-    private void webgui$cancelVanillaForWebHudPseudoGui(long window, int button, int action, int mods, CallbackInfo ci) {*/
+    /*//? if >=26 {
+    @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
+    private void webgui$cancelVanillaForWebHudPseudoGui(long window, MouseButtonInfo rawButtonInfo, int action, CallbackInfo ci) {
+    //? } else {
+    @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
+    private void webgui$cancelVanillaForWebHudPseudoGui(long window, int button, int action, int mods, CallbackInfo ci) {
+    //? }*/
     //? }
     //? } else {
     //? if fabric {
@@ -98,11 +106,19 @@ public class MouseMixin {
                 browser.sendMouseRelease(lx, ly, input.button());
             }
             //? } else {
-            /*if (action == GLFW.GLFW_PRESS) {
+            /*//? if >=26 {
+            if (action == GLFW.GLFW_PRESS) {
+                browser.sendMousePress(lx, ly, rawButtonInfo.button());
+            } else if (action == GLFW.GLFW_RELEASE) {
+                browser.sendMouseRelease(lx, ly, rawButtonInfo.button());
+            }
+            //? } else {
+            if (action == GLFW.GLFW_PRESS) {
                 browser.sendMousePress(lx, ly, button);
             } else if (action == GLFW.GLFW_RELEASE) {
                 browser.sendMouseRelease(lx, ly, button);
-            }*/
+            }
+            //? }*/
             //? }
             //? } else {
             /*if (action == GLFW.GLFW_PRESS) {
