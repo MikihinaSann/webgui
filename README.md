@@ -26,11 +26,15 @@ WebGUI is a Fabric & NeoForge mod that embeds a real Chromium browser (via [MCEF
 
 | Minecraft | Loader | Status |
 |-----------|--------|--------|
+| 26.2 | NeoForge | 🧪 Beta |
+| 26.1 | NeoForge | 🧪 Beta |
 | 1.21.5 – 1.21.11 | Fabric | ✅ Active |
 | 1.21.5 – 1.21.11 | NeoForge | ✅ Active |
 | 1.21 – 1.21.1 | Fabric | ✅ Supported |
 | 1.21 – 1.21.1 | NeoForge | ✅ Supported |
 | 1.20.1 | Fabric | ✅ Supported |
+
+Minecraft 26 builds are **NeoForge-only and in beta** — Fabric is on hold until Yarn mappings for 26.x are published.
 
 Chromium (~150 MB) is downloaded automatically on first launch. Include [MCEF](https://modrinth.com/mod/mcef) in your modpack to pre-bundle it.
 
