@@ -183,7 +183,7 @@ public final class WebGUIClient
         }
         String u = url == null || url.isBlank() ? StartUrls.primary() : url;
         if (mode == WebviewNetworking.MODE_GUI) {
-            //? if >=26 {
+            //? if >=26.2-neoforge {
             client.gui.setScreen(new WebViewScreen(u));
             //? } else {
             client.setScreen(new WebViewScreen(u));

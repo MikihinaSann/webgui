@@ -100,7 +100,7 @@ public final class WebGUIKeys {
             if (!WebHudOverlay.isHudVisible() || client.currentScreen != null) {
         //? } else {
         /*while (hudInteractive.consumeClick()) {
-            //? if >=26 {
+            //? if >=26.2-neoforge {
             if (!WebHudOverlay.isHudVisible() || client.gui.screen() != null) {
             //? } else {
             if (!WebHudOverlay.isHudVisible() || client.screen != null) {
@@ -127,7 +127,7 @@ public final class WebGUIKeys {
     }
     //? } else {
     /*private static void tryOpenMainMenu(Minecraft client) {
-        //? if >=26 {
+        //? if >=26.2-neoforge {
         if (client.gui.screen() instanceof WebViewScreen) {
         //? } else {
         if (client.screen instanceof WebViewScreen) {
@@ -144,7 +144,7 @@ public final class WebGUIKeys {
             }
             return;
         }
-        //? if >=26 {
+        //? if >=26.2-neoforge {
         client.gui.setScreen(new WebViewScreen(WebGUIMainMenuUrl.getUrl()));
         //? } else {
         client.setScreen(new WebViewScreen(WebGUIMainMenuUrl.getUrl()));

@@ -66,7 +66,7 @@ public final class WebHudOverlay {
         //? if fabric {
         boolean hasGui1 = client.currentScreen != null;
         //? } else {
-        /*//? if >=26 {
+        /*//? if >=26.2-neoforge {
         boolean hasGui1 = client.gui.screen() != null;
         //? } else {
         boolean hasGui1 = client.screen != null;
@@ -92,7 +92,7 @@ public final class WebHudOverlay {
         //? if fabric {
         boolean hasGui2 = client.currentScreen != null;
         //? } else {
-        /*//? if >=26 {
+        /*//? if >=26.2-neoforge {
         boolean hasGui2 = client.gui.screen() != null;
         //? } else {
         boolean hasGui2 = client.screen != null;
@@ -118,7 +118,7 @@ public final class WebHudOverlay {
         //? if fabric {
         if (client == null || client.currentScreen != null) {
         //? } else {
-        /*//? if >=26 {
+        /*//? if >=26.2-neoforge {
         if (client == null || client.gui.screen() != null) {
         //? } else {
         if (client == null || client.screen != null) {
@@ -144,7 +144,7 @@ public final class WebHudOverlay {
         //? if fabric {
         if (client.currentScreen != null) {
         //? } else {
-        /*//? if >=26 {
+        /*//? if >=26.2-neoforge {
         if (client.gui.screen() != null) {
         //? } else {
         if (client.screen != null) {
@@ -191,13 +191,13 @@ public final class WebHudOverlay {
         //? if fabric {
         if (client.currentScreen != null) {
         //? } else {
-        /*//? if >=26 {
+        /*//? if >=26.2-neoforge {
         if (client.gui.screen() != null) {
         //? } else {
         if (client.screen != null) {
         //? }*/
         //? }
-            //? if >=26 {
+            //? if >=26.2-neoforge {
             /*client.gui.setScreen(null);*/
             //? } else {
             client.setScreen(null);
@@ -221,7 +221,7 @@ public final class WebHudOverlay {
         //? if fabric {
         if (client.currentScreen instanceof WebViewScreen) {
         //? } else {
-        /*//? if >=26 {
+        /*//? if >=26.2-neoforge {
         if (client.gui.screen() instanceof WebViewScreen) {
         //? } else {
         if (client.screen instanceof WebViewScreen) {
@@ -268,7 +268,7 @@ public final class WebHudOverlay {
         //? if fabric {
         boolean hasGui7 = client.currentScreen != null;
         //? } else {
-        /*//? if >=26 {
+        /*//? if >=26.2-neoforge {
         boolean hasGui7 = client.gui.screen() != null;
         //? } else {
         boolean hasGui7 = client.screen != null;
