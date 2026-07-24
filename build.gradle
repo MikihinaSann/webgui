@@ -184,13 +184,17 @@ tasks.register('bumpPatch') {
     }
 }
 
+// Java version tracks the Minecraft version: 21 for 1.20/1.21, 25 for MC 26+.
+def javaVersion = (project.findProperty('java_version') ?: '21').toString().toInteger()
+
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = 'UTF-8'
-    it.options.release  = 21
+    it.options.release  = javaVersion
 }
 
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
 }
