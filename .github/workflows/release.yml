@@ -221,6 +221,114 @@ jobs:
           changelog: ${{ steps.notes.outputs.body }}
           files: versions/26.1.2-neoforge/build/libs/!(*-@(dev|sources|javadoc)).jar
 
+      # CurseForge — mirrors the Modrinth uploads. Only runs when the CURSEFORGE_ID
+      # repo variable is set, and never blocks the (gated) Modrinth release:
+      # every step is continue-on-error.
+      - name: Publish 1.20.1 Fabric to CurseForge
+        if: steps.check.outputs.release == 'true' && vars.CURSEFORGE_ID != ''
+        continue-on-error: true
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          name: WebGUI ${{ steps.meta.outputs.version }} (1.20.1 Fabric)
+          version: ${{ steps.meta.outputs.version }}+mc1.20.1-fabric
+          version-type: release
+          loaders: fabric
+          game-versions: '1.20.1'
+          changelog: ${{ steps.notes.outputs.body }}
+          files: versions/1.20.1-fabric/build/libs/!(*-@(dev|sources|javadoc)).jar
+
+      - name: Publish 1.21.1 Fabric to CurseForge
+        if: steps.check.outputs.release == 'true' && vars.CURSEFORGE_ID != ''
+        continue-on-error: true
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          name: WebGUI ${{ steps.meta.outputs.version }} (1.21.1 Fabric)
+          version: ${{ steps.meta.outputs.version }}+mc1.21.1-fabric
+          version-type: release
+          loaders: fabric
+          game-versions: '1.21.1'
+          changelog: ${{ steps.notes.outputs.body }}
+          files: versions/1.21.1-fabric/build/libs/!(*-@(dev|sources|javadoc)).jar
+
+      - name: Publish 1.21.11 Fabric to CurseForge
+        if: steps.check.outputs.release == 'true' && vars.CURSEFORGE_ID != ''
+        continue-on-error: true
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          name: WebGUI ${{ steps.meta.outputs.version }} (1.21.11 Fabric)
+          version: ${{ steps.meta.outputs.version }}+mc1.21.11-fabric
+          version-type: release
+          loaders: fabric
+          game-versions: '1.21.11'
+          changelog: ${{ steps.notes.outputs.body }}
+          files: versions/1.21.11-fabric/build/libs/!(*-@(dev|sources|javadoc)).jar
+
+      - name: Publish 1.21.1 NeoForge to CurseForge
+        if: steps.check.outputs.release == 'true' && vars.CURSEFORGE_ID != ''
+        continue-on-error: true
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          name: WebGUI ${{ steps.meta.outputs.version }} (1.21.1 NeoForge)
+          version: ${{ steps.meta.outputs.version }}+mc1.21.1-neoforge
+          version-type: release
+          loaders: neoforge
+          game-versions: '1.21.1'
+          changelog: ${{ steps.notes.outputs.body }}
+          files: versions/1.21.1-neoforge/build/libs/!(*-@(dev|sources|javadoc)).jar
+
+      - name: Publish 1.21.11 NeoForge to CurseForge
+        if: steps.check.outputs.release == 'true' && vars.CURSEFORGE_ID != ''
+        continue-on-error: true
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          name: WebGUI ${{ steps.meta.outputs.version }} (1.21.11 NeoForge)
+          version: ${{ steps.meta.outputs.version }}+mc1.21.11-neoforge
+          version-type: release
+          loaders: neoforge
+          game-versions: '1.21.11'
+          changelog: ${{ steps.notes.outputs.body }}
+          files: versions/1.21.11-neoforge/build/libs/!(*-@(dev|sources|javadoc)).jar
+
+      - name: Publish 26.2 NeoForge to CurseForge (beta)
+        if: steps.check.outputs.release == 'true' && vars.CURSEFORGE_ID != ''
+        continue-on-error: true
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          name: WebGUI ${{ steps.meta.outputs.version }} (26.2 NeoForge, beta)
+          version: ${{ steps.meta.outputs.version }}+mc26.2-neoforge
+          version-type: beta
+          loaders: neoforge
+          game-versions: '26.2'
+          changelog: ${{ steps.notes.outputs.body }}
+          files: versions/26.2-neoforge/build/libs/!(*-@(dev|sources|javadoc)).jar
+
+      - name: Publish 26.1.2 NeoForge to CurseForge (beta)
+        if: steps.check.outputs.release == 'true' && vars.CURSEFORGE_ID != ''
+        continue-on-error: true
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          name: WebGUI ${{ steps.meta.outputs.version }} (26.1.2 NeoForge, beta)
+          version: ${{ steps.meta.outputs.version }}+mc26.1.2-neoforge
+          version-type: beta
+          loaders: neoforge
+          game-versions: '26.1.2'
+          changelog: ${{ steps.notes.outputs.body }}
+          files: versions/26.1.2-neoforge/build/libs/!(*-@(dev|sources|javadoc)).jar
+
       # mc-publish can report success without actually creating a version (e.g.
       # a token lacking the "Create versions" scope). Confirm every version is
       # really on Modrinth so a green run can't lie.
