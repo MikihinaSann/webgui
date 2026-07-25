@@ -36,6 +36,7 @@ public final class WebviewNetworking {
         PayloadTypeRegistry.playS2C().register(WebviewPayloads.WebUIMainMenuPayload.ID, WebviewPayloads.WebUIMainMenuPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(WebviewPayloads.WebviewEmitS2CPayload.ID, WebviewPayloads.WebviewEmitS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(WebviewPayloads.WebviewEntityContextS2CPayload.ID, WebviewPayloads.WebviewEntityContextS2CPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(WebviewPayloads.WebviewTrustedOriginsS2CPayload.ID, WebviewPayloads.WebviewTrustedOriginsS2CPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(WebviewPayloads.WebviewPageEventC2SPayload.ID, WebviewPayloads.WebviewPageEventC2SPayload.CODEC);
         //? }
     }
@@ -68,6 +69,8 @@ public final class WebviewNetworking {
                         WebviewPayloads.WebviewEmitS2CPayload.STREAM_CODEC, (payload, ctx) -> {});
                 reg.playToClient(WebviewPayloads.WebviewEntityContextS2CPayload.TYPE,
                         WebviewPayloads.WebviewEntityContextS2CPayload.STREAM_CODEC, (payload, ctx) -> {});
+                reg.playToClient(WebviewPayloads.WebviewTrustedOriginsS2CPayload.TYPE,
+                        WebviewPayloads.WebviewTrustedOriginsS2CPayload.STREAM_CODEC, (payload, ctx) -> {});
             }
         });
     }*/
@@ -172,6 +175,17 @@ public final class WebviewNetworking {
         //? }
     }
 
+    public static void sendTrustedOrigins(ServerPlayerEntity player, String origins) {
+        String o = origins == null ? "" : origins;
+        //? if >=1.20.5 {
+        ServerPlayNetworking.send(player, new WebviewPayloads.WebviewTrustedOriginsS2CPayload(o));
+        //? } else {
+        /*PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeString(o, WebviewPayloads.MAX_EVENT_DATA_LENGTH);
+        ServerPlayNetworking.send(player, WebviewPayloads.TRUSTED_ORIGINS_CHANNEL, buf);*/
+        //? }
+    }
+
     private static String withPlayerToken(ServerPlayerEntity player, String url) {
         if (!WebviewServerConfig.enableTokens()) {
             return sanitizeUrl(url);
@@ -215,6 +229,10 @@ public final class WebviewNetworking {
 
     public static void sendMainMenuUrl(ServerPlayer player, String url) {
         PacketDistributor.sendToPlayer(player, new WebviewPayloads.WebUIMainMenuPayload(sanitizeUrl(url)));
+    }
+
+    public static void sendTrustedOrigins(ServerPlayer player, String origins) {
+        PacketDistributor.sendToPlayer(player, new WebviewPayloads.WebviewTrustedOriginsS2CPayload(origins == null ? "" : origins));
     }
 
     private static String withPlayerToken(ServerPlayer player, String url) {

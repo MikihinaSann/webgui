@@ -54,6 +54,10 @@ public final class WebGUIClient
         ClientPlayNetworking.registerGlobalReceiver(WebviewPayloads.WebviewEntityContextS2CPayload.ID, (payload, context) -> {
             context.client().execute(() -> WebviewClientBridge.setEntityContext(payload.entityJson()));
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(WebviewPayloads.WebviewTrustedOriginsS2CPayload.ID, (payload, context) -> {
+            context.client().execute(() -> WebGUITrustedOrigins.set(payload.origins()));
+        });
         //? } else {
         /*ClientPlayNetworking.registerGlobalReceiver(WebviewPayloads.OPEN_WEB_CHANNEL, (client, handler, buf, responseSender) -> {
             int protocolVersion = buf.readVarInt();
@@ -74,6 +78,11 @@ public final class WebGUIClient
             String eventName   = buf.readString(WebviewPayloads.MAX_EVENT_NAME_LENGTH);
             String jsonPayload = buf.readString(WebviewPayloads.MAX_EVENT_DATA_LENGTH);
             client.execute(() -> WebviewClientEmit.dispatch(eventName, jsonPayload));
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(WebviewPayloads.TRUSTED_ORIGINS_CHANNEL, (client, handler, buf, responseSender) -> {
+            String origins = buf.readString(WebviewPayloads.MAX_EVENT_DATA_LENGTH);
+            client.execute(() -> WebGUITrustedOrigins.set(origins));
         });*/
         //? }
 
@@ -95,6 +104,7 @@ public final class WebGUIClient
         WebHudOverlay.reset();
         WebSession.dispose();
         WebGUIMainMenuUrl.setUrl("");
+        WebGUITrustedOrigins.clear();
     }
 
     private static void handleOpenPayload(net.minecraft.client.MinecraftClient client, int mode, String url) {
@@ -142,6 +152,7 @@ public final class WebGUIClient
         WebHudOverlay.reset();
         WebSession.dispose();
         WebGUIMainMenuUrl.setUrl("");
+        WebGUITrustedOrigins.clear();
     }
 
     // Called only on the client (from WebviewNetworking.registerPayloadTypes) so
@@ -159,6 +170,8 @@ public final class WebGUIClient
                 (payload, ctx) -> ctx.enqueueWork(() -> WebviewClientEmit.dispatch(payload.eventName(), payload.jsonPayload())));
         reg.playToClient(WebviewPayloads.WebviewEntityContextS2CPayload.TYPE, WebviewPayloads.WebviewEntityContextS2CPayload.STREAM_CODEC,
                 (payload, ctx) -> ctx.enqueueWork(() -> WebviewClientBridge.setEntityContext(payload.entityJson())));
+        reg.playToClient(WebviewPayloads.WebviewTrustedOriginsS2CPayload.TYPE, WebviewPayloads.WebviewTrustedOriginsS2CPayload.STREAM_CODEC,
+                (payload, ctx) -> ctx.enqueueWork(() -> WebGUITrustedOrigins.set(payload.origins())));
     }
 
     private static void onClientTick(ClientTickEvent.Post event) {

@@ -10,12 +10,17 @@ import net.fabricmc.loader.api.FabricLoader;
 /*import net.neoforged.fml.loading.FMLPaths;*/
 //? }
 
+import com.google.gson.JsonArray;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 
 public final class WebviewServerConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -41,6 +46,10 @@ public final class WebviewServerConfig {
 
     // {"version":"1.2.3"} or GitHub Releases {"tag_name":"v1.2.3","html_url":"..."}; empty = disabled
     private String updateCheckUrl = "";
+
+    // Origins (scheme://host[:port]) whose pages may run commands as the player. Sent to the client
+    // on join; the client rejects command requests from any other origin. Empty = no page may run commands.
+    private List<String> trustedCommandOrigins = new ArrayList<>();
 
     private static WebviewServerConfig instance = new WebviewServerConfig();
 
@@ -68,6 +77,10 @@ public final class WebviewServerConfig {
             o.addProperty("mainMenuUrl", "http://your-site.example/menu");
 
             o.addProperty("updateCheckUrl", "");
+
+            JsonArray origins = new JsonArray();
+            origins.add("https://your-site.example");
+            o.add("trustedCommandOrigins", origins);
 
             String json = GSON.toJson(o);
             Files.writeString(examplePath(), json, StandardCharsets.UTF_8);
@@ -125,6 +138,15 @@ public final class WebviewServerConfig {
         } else {
             updateCheckUrl = updateCheckUrl.trim();
         }
+        List<String> cleaned = new ArrayList<>();
+        if (trustedCommandOrigins != null) {
+            for (String o : trustedCommandOrigins) {
+                if (o == null) continue;
+                String t = o.trim();
+                if (!t.isEmpty()) cleaned.add(t);
+            }
+        }
+        trustedCommandOrigins = cleaned;
     }
 
     static Gson gson() {
@@ -178,6 +200,17 @@ public final class WebviewServerConfig {
     public static String updateCheckUrl() {
         String u = instance.updateCheckUrl;
         return u == null ? "" : u.trim();
+    }
+
+    /** Origins whose pages may run commands as the player. Never null. */
+    public static List<String> trustedCommandOrigins() {
+        List<String> o = instance.trustedCommandOrigins;
+        return o == null ? Collections.emptyList() : o;
+    }
+
+    /** Newline-joined trusted origins, for compact transport to the client. */
+    public static String trustedCommandOriginsJoined() {
+        return String.join("\n", trustedCommandOrigins());
     }
 
     /** Reloads server.json from disk. Returns a human-readable status line for command feedback. */
