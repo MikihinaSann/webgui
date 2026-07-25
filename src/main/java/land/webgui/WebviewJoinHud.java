@@ -23,6 +23,8 @@ public final class WebviewJoinHud {
                         return;
                     }
 
+                    WebviewNetworking.sendTrustedOrigins(player, WebviewServerConfig.trustedCommandOriginsJoined());
+
                     String mainMenuUrl = WebviewServerConfig.mainMenuUrl();
                     if (!mainMenuUrl.isEmpty()) {
                         WebviewNetworking.sendMainMenuUrl(player, mainMenuUrl);
@@ -48,6 +50,8 @@ public final class WebviewJoinHud {
 
     private static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         ServerPlayer player = (ServerPlayer) event.getEntity();
+
+        WebviewNetworking.sendTrustedOrigins(player, WebviewServerConfig.trustedCommandOriginsJoined());
 
         String mainMenuUrl = WebviewServerConfig.mainMenuUrl();
         if (!mainMenuUrl.isEmpty()) {

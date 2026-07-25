@@ -22,7 +22,9 @@ import org.cef.browser.CefMessageRouter;
 import org.cef.callback.CefQueryCallback;
 import org.cef.handler.CefMessageRouterHandlerAdapter;
 
-// Built-in channels: "close" — closes active GUI/HUD; "log" — logs to console. Others logged at INFO.
+// Built-in channels: "close" — closes active GUI/HUD; "log" — logs to console;
+// "command" — runs a command as the player, only from a trusted origin (see WebGUITrustedOrigins).
+// Other channels are forwarded to the server as page events.
 public final class WebviewPageToClientBridge {
     private WebviewPageToClientBridge() {}
 
@@ -33,7 +35,7 @@ public final class WebviewPageToClientBridge {
             public boolean onQuery(CefBrowser browser, CefFrame frame, long queryId,
                                    String request, boolean persistent, CefQueryCallback callback) {
                 try {
-                    dispatch(request, callback);
+                    dispatch(frame, request, callback);
                 } catch (Throwable t) {
                     WebGUIMod.LOGGER.warn("[webgui page→game] handler error", t);
                     callback.failure(-1, t.getMessage() != null ? t.getMessage() : "error");
@@ -44,7 +46,7 @@ public final class WebviewPageToClientBridge {
         MCEF.getClient().getHandle().addMessageRouter(router);
     }
 
-    private static void dispatch(String request, CefQueryCallback callback) {
+    private static void dispatch(CefFrame frame, String request, CefQueryCallback callback) {
         if (request == null || request.isBlank()) {
             callback.failure(-2, "empty request");
             return;
@@ -95,6 +97,41 @@ public final class WebviewPageToClientBridge {
                         WebHudOverlay.toggleHud(mc);
                     }
                 });
+            }
+            case "command" -> {
+                String cmd = obj.has("command") && !obj.get("command").isJsonNull()
+                        ? obj.get("command").getAsString() : null;
+                if (cmd == null || cmd.isBlank()) {
+                    callback.failure(-3, "empty command");
+                    return;
+                }
+                // Only the main frame of a server-declared trusted origin may run commands.
+                if (frame == null || !frame.isMain() || !WebGUITrustedOrigins.isTrusted(frame.getURL())) {
+                    WebGUIMod.LOGGER.warn("[webgui] blocked command from untrusted origin: {}",
+                            frame != null ? frame.getURL() : "?");
+                    callback.failure(-4, "untrusted origin");
+                    return;
+                }
+                String raw = cmd.startsWith("/") ? cmd.substring(1) : cmd;
+                if (raw.length() > WebviewPayloads.MAX_EVENT_DATA_LENGTH) {
+                    callback.failure(-5, "command too long");
+                    return;
+                }
+                //? if fabric {
+                MinecraftClient mc = MinecraftClient.getInstance();
+                mc.execute(() -> {
+                    if (mc.player != null && mc.getNetworkHandler() != null) {
+                        mc.player.networkHandler.sendChatCommand(raw);
+                    }
+                });
+                //? } else {
+                /*Minecraft mc = Minecraft.getInstance();
+                mc.execute(() -> {
+                    if (mc.player != null && mc.getConnection() != null) {
+                        mc.player.connection.sendCommand(raw);
+                    }
+                });*/
+                //? }
             }
             default -> {
                 if (request.length() > WebviewPayloads.MAX_EVENT_DATA_LENGTH) {
