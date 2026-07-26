@@ -9,7 +9,7 @@ import net.minecraft.client.Mouse;
 //? } else {
 /*import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
-//? if >=26 {
+//? if >=1.21.5 {
 import net.minecraft.client.input.MouseButtonInfo;
 //? }*/
 //? }
@@ -36,7 +36,7 @@ public class MouseMixin {
     @Inject(method = "onMouseButton", at = @At("HEAD"), cancellable = true)
     private void webgui$cancelVanillaForWebHudPseudoGui(long window, MouseInput input, int action, CallbackInfo ci) {
     //? } else {
-    /*//? if >=26 {
+    /*//? if >=1.21.5 {
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
     private void webgui$cancelVanillaForWebHudPseudoGui(long window, MouseButtonInfo rawButtonInfo, int action, CallbackInfo ci) {
     //? } else {
@@ -106,7 +106,7 @@ public class MouseMixin {
                 browser.sendMouseRelease(lx, ly, input.button());
             }
             //? } else {
-            /*//? if >=26 {
+            /*//? if >=1.21.5 {
             if (action == GLFW.GLFW_PRESS) {
                 browser.sendMousePress(lx, ly, rawButtonInfo.button());
             } else if (action == GLFW.GLFW_RELEASE) {
