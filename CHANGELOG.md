@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.1 - 2026-07-26
+
+### Fixed
+- Fixed a NeoForge 1.21.11 startup crash: `MouseMixin` still targeted the removed `MouseHandler.onPress`; it now injects into `onButton` on 1.21.5+.
+
 ## 1.6.0 - 2026-07-25
 
 ### Added
