@@ -371,6 +371,7 @@ public final class WebHudOverlay {
         }
         if (WebSession.mode() == WebSession.Mode.HUD_OVERLAY && browser == WebSession.browser()) {
             hudPageReady = true;
+            WebViewLayout.applyZoom(browser);
         }
     }
 
@@ -478,26 +479,22 @@ public final class WebHudOverlay {
 
     //? if fabric {
     public static int toBrowserLocalX(double mouseX, MinecraftClient client) {
+        int sw = client.getWindow().getScaledWidth();
     //? } else {
-    /*public static int toBrowserLocalX(double mouseX, Minecraft client) {*/
+    /*public static int toBrowserLocalX(double mouseX, Minecraft client) {
+        int sw = client.getWindow().getGuiScaledWidth();*/
     //? }
-        //? if fabric {
-        return (int) (mouseX * client.getWindow().getScaleFactor());
-        //? } else {
-        /*return (int) (mouseX * client.getWindow().getGuiScale());*/
-        //? }
+        return (int) Math.round(mouseX * browserViewSize(client)[0] / (double) Math.max(1, sw));
     }
 
     //? if fabric {
     public static int toBrowserLocalY(double mouseY, MinecraftClient client) {
+        int sh = client.getWindow().getScaledHeight();
     //? } else {
-    /*public static int toBrowserLocalY(double mouseY, Minecraft client) {*/
+    /*public static int toBrowserLocalY(double mouseY, Minecraft client) {
+        int sh = client.getWindow().getGuiScaledHeight();*/
     //? }
-        //? if fabric {
-        return (int) (mouseY * client.getWindow().getScaleFactor());
-        //? } else {
-        /*return (int) (mouseY * client.getWindow().getGuiScale());*/
-        //? }
+        return (int) Math.round(mouseY * browserViewSize(client)[1] / (double) Math.max(1, sh));
     }
 
     //? if fabric {
@@ -509,18 +506,25 @@ public final class WebHudOverlay {
         if (browser == null) {
             return;
         }
-        //? if fabric {
-        int pxW = client.getWindow().getWidth();
-        int pxH = client.getWindow().getHeight();
-        //? } else {
-        /*int pxW = client.getWindow().getWidth();
-        int pxH = client.getWindow().getHeight();*/
-        //? }
+        int[] size = browserViewSize(client);
+        int pxW = size[0];
+        int pxH = size[1];
         if (pxW != lastPixelW || pxH != lastPixelH) {
             browser.resize(pxW, pxH);
+            WebViewLayout.applyZoom(browser);
             lastPixelW = pxW;
             lastPixelH = pxH;
         }
+    }
+
+    // Browser view size = physical framebuffer px; page zoom keeps the CSS viewport logical.
+    //? if fabric {
+    private static int[] browserViewSize(MinecraftClient client) {
+    //? } else {
+    /*private static int[] browserViewSize(Minecraft client) {*/
+    //? }
+        var window = client.getWindow();
+        return WebViewLayout.browserSize(window.getWidth(), window.getHeight());
     }
 
     //? if fabric {

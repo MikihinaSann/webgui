@@ -105,32 +105,30 @@ public class WebViewScreen extends Screen {
         return x >= 0 && y >= 0 && x < this.width && y < this.height;
     }
 
-    private int browserLocalMouseX(double x) {
+    // Browser view size in logical window points, independent of the GUI Scale setting.
+    private int[] browserViewSize() {
         //? if fabric {
-        return (int) (x * this.client.getWindow().getScaleFactor());
+        var window = this.client.getWindow();
         //? } else {
-        /*return (int) (x * this.minecraft.getWindow().getGuiScale());*/
+        /*var window = this.minecraft.getWindow();*/
         //? }
+        return WebViewLayout.browserSize(window.getWidth(), window.getHeight());
+    }
+
+    private int browserLocalMouseX(double x) {
+        return (int) Math.round(x * browserViewSize()[0] / (double) getBrowserWidth());
     }
 
     private int browserLocalMouseY(double y) {
-        //? if fabric {
-        return (int) (y * this.client.getWindow().getScaleFactor());
-        //? } else {
-        /*return (int) (y * this.minecraft.getWindow().getGuiScale());*/
-        //? }
+        return (int) Math.round(y * browserViewSize()[1] / (double) getBrowserHeight());
     }
 
     private void resizeBrowser() {
-        //? if fabric {
-        if (browser != null && this.client != null) {
-            browser.resize(this.client.getWindow().getWidth(), this.client.getWindow().getHeight());
+        if (browser != null) {
+            int[] size = browserViewSize();
+            browser.resize(size[0], size[1]);
+            WebViewLayout.applyZoom(browser);
         }
-        //? } else {
-        /*if (browser != null && this.minecraft != null) {
-            browser.resize(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight());
-        }*/
-        //? }
     }
 
     //? if >=1.21.5 {
@@ -194,6 +192,7 @@ public class WebViewScreen extends Screen {
         }
         if (WebSession.mode() == WebSession.Mode.GUI_SCREEN && browser == WebSession.browser()) {
             guiPageReady = true;
+            WebViewLayout.applyZoom(browser);
         }
     }
 

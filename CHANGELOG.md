@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.2 - 2026-07-26
+
+### Fixed
+- The web page now renders crisply on HiDPI/Retina displays and no longer looks mis-scaled or changes size with Minecraft's GUI Scale setting.
+
 ## 1.6.1 - 2026-07-26
 
 ### Fixed
