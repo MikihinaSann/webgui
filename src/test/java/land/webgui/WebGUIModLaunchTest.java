@@ -21,31 +21,42 @@ class WebGUIModLaunchTest {
 
     private static final String MOD_ID = "webgui";
 
-    private enum Loader { FABRIC, NEOFORGE }
+    private enum Loader { FABRIC, NEOFORGE, FORGE }
 
     private static Loader detectLoader() {
         try {
             Class.forName("net.fabricmc.loader.api.FabricLoader");
             return Loader.FABRIC;
         } catch (ClassNotFoundException e) {
-            return Loader.NEOFORGE;
+            try {
+                Class.forName("net.neoforged.fml.ModList");
+                return Loader.NEOFORGE;
+            } catch (ClassNotFoundException e2) {
+                return Loader.FORGE;
+            }
         }
     }
 
     private static boolean isModLoaded(String id) throws Exception {
-        if (detectLoader() == Loader.FABRIC) {
+        Loader loader = detectLoader();
+        if (loader == Loader.FABRIC) {
             Class<?> fl = Class.forName("net.fabricmc.loader.api.FabricLoader");
             Object inst = fl.getMethod("getInstance").invoke(null);
             return (boolean) fl.getMethod("isModLoaded", String.class).invoke(inst, id);
         }
-        Class<?> ml = Class.forName("net.neoforged.fml.ModList");
+        // Both Forge and NeoForge use ModList.get().isLoaded()
+        String modListClass = loader == Loader.FORGE
+                ? "net.minecraftforge.fml.ModList"
+                : "net.neoforged.fml.ModList";
+        Class<?> ml = Class.forName(modListClass);
         Object inst = ml.getMethod("get").invoke(null);
         return (boolean) ml.getMethod("isLoaded", String.class).invoke(inst, id);
     }
 
     /** Returns the mod id as reported by the loader's own mod container/metadata. */
     private static String loadedModId(String id) throws Exception {
-        if (detectLoader() == Loader.FABRIC) {
+        Loader loader = detectLoader();
+        if (loader == Loader.FABRIC) {
             Class<?> fl = Class.forName("net.fabricmc.loader.api.FabricLoader");
             Object inst = fl.getMethod("getInstance").invoke(null);
             @SuppressWarnings("unchecked")
@@ -56,14 +67,23 @@ class WebGUIModLaunchTest {
             Object metadata = containerCls.getMethod("getMetadata").invoke(container.get());
             return (String) metadataCls.getMethod("getId").invoke(metadata);
         }
-        Class<?> ml = Class.forName("net.neoforged.fml.ModList");
+        String modListClass = loader == Loader.FORGE
+                ? "net.minecraftforge.fml.ModList"
+                : "net.neoforged.fml.ModList";
+        String modContainerClass = loader == Loader.FORGE
+                ? "net.minecraftforge.fml.ModContainer"
+                : "net.neoforged.fml.ModContainer";
+        String modInfoInterface = loader == Loader.FORGE
+                ? "net.minecraftforge.forgespi.language.IModInfo"
+                : "net.neoforged.neoforgespi.language.IModInfo";
+        Class<?> ml = Class.forName(modListClass);
         Object inst = ml.getMethod("get").invoke(null);
         @SuppressWarnings("unchecked")
         Optional<Object> container = (Optional<Object>) ml.getMethod("getModContainerById", String.class).invoke(inst, id);
         assertTrue(container.isPresent(), "mod container should be present");
-        Class<?> containerCls = Class.forName("net.neoforged.fml.ModContainer");
+        Class<?> containerCls = Class.forName(modContainerClass);
         Object modInfo = containerCls.getMethod("getModInfo").invoke(container.get());
-        Class<?> modInfoCls = Class.forName("net.neoforged.neoforgespi.language.IModInfo");
+        Class<?> modInfoCls = Class.forName(modInfoInterface);
         return (String) modInfoCls.getMethod("getModId").invoke(modInfo);
     }
 

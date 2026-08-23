@@ -1,6 +1,8 @@
 plugins {
     id 'fabric-loom'       version '1.16.+' apply false
     id 'net.neoforged.moddev' version '2.0.+' apply false
+    id 'net.minecraftforge.gradle' version '7.0.+' apply false
+    id 'net.minecraftforge.renamer' version '1.1.7' apply false
     id 'maven-publish'
 }
 
@@ -9,21 +11,26 @@ plugins {
 version = "${mod_version}+mc${minecraft_version}"
 group   = maven_group
 
-def sc_loader = stonecutter.current.version.contains("neoforge") ? "neoforge" : "fabric"
+def sc_loader = stonecutter.current.version.contains("neoforge") ? "neoforge"
+        : stonecutter.current.version.contains("forge") ? "forge"
+        : "fabric"
 
 stonecutter.constants {
-    put "fabric", (sc_loader == "fabric")
+    it["fabric"] = (sc_loader == "fabric")
+    it["forge"] = (sc_loader == "forge")
 }
 
-// NeoForge uses Mojang mappings: currentScreen → screen
+// NeoForge and Forge both use Mojang mappings: currentScreen → screen
 if (sc_loader != "fabric") {
     stonecutter.swaps {
-        put "currentScreen", "screen"
+        it["currentScreen"] = "screen"
     }
 }
 
+// Forge uses Rinku instead of MCEF (patched in stonecutterGenerate doLast)
+
 base {
-    // Include the loader so Fabric and NeoForge jars for the same MC version
+    // Include the loader so Fabric/NeoForge/Forge jars for the same MC version
     // don't share a filename — otherwise flat release assets overwrite each
     // other and only one loader survives.
     archivesName = "${archives_base_name}-${sc_loader}"
@@ -32,6 +39,93 @@ base {
 // Apply the loader-specific plugin after the stonecutter constants are set
 if (sc_loader == "fabric") {
     apply plugin: 'fabric-loom'
+} else if (sc_loader == "forge") {
+    apply plugin: 'net.minecraftforge.gradle'
+    apply plugin: 'net.minecraftforge.renamer'
+    // Patch generated sources after Stonecutter processing:
+    // replace NeoForge → Forge imports and MCEF → Rinku.
+    tasks.register('patchForgeSources') {
+        doLast {
+            def genDir = file("${buildDir}/generated/stonecutter/main/java")
+            genDir.eachFileRecurse { f ->
+                if (f.name.endsWith('.java')) {
+                    String text = f.text
+                    // NeoForge → Forge package replacements
+                    text = text.replace('net.neoforged.neoforge.common.NeoForge', 'net.minecraftforge.common.MinecraftForge')
+                    text = text.replace('net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent', 'net.minecraftforge.client.event.ClientPlayerNetworkEvent')
+                    text = text.replace('net.neoforged.neoforge.client.event.ClientTickEvent', 'net.minecraftforge.event.TickEvent')
+                    text = text.replace('net.neoforged.neoforge.client.event.RenderGuiEvent', 'net.minecraftforge.client.event.RenderGuiEvent')
+                    text = text.replace('net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent', 'net.minecraftforge.client.event.RegisterKeyMappingsEvent')
+                    text = text.replace('net.neoforged.neoforge.event.entity.player.PlayerInteractEvent', 'net.minecraftforge.event.entity.player.PlayerInteractEvent')
+                    text = text.replace('net.neoforged.neoforge.event.server.ServerStartedEvent', 'net.minecraftforge.event.server.ServerStartedEvent')
+                    text = text.replace('net.neoforged.neoforge.event.server.ServerStartingEvent', 'net.minecraftforge.event.server.ServerStartingEvent')
+                    text = text.replace('net.neoforged.neoforge.event.RegisterCommandsEvent', 'net.minecraftforge.event.RegisterCommandsEvent')
+                    text = text.replace('net.neoforged.neoforge.event.entity.player.PlayerEvent', 'net.minecraftforge.event.entity.player.PlayerEvent')
+                    text = text.replace('net.neoforged.neoforge.network.PacketDistributor', 'net.minecraftforge.network.PacketDistributor')
+                    text = text.replace('net.neoforged.bus.api.IEventBus', 'net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext')
+                    text = text.replace('net.neoforged.fml.common.Mod', 'net.minecraftforge.fml.common.Mod')
+                    text = text.replace('net.neoforged.fml.loading.FMLEnvironment', 'net.minecraftforge.fml.loading.FMLEnvironment')
+                    text = text.replace('net.neoforged.fml.ModList', 'net.minecraftforge.fml.ModList')
+                    text = text.replace('net.neoforged.fml.loading.FMLPaths', 'net.minecraftforge.fml.loading.FMLPaths')
+                    // MCEF → Rinku replacements
+                    text = text.replace('com.cinemamod.mcef.MCEFBrowser', 'de.keksuccino.rinku.RinkuBrowser')
+                    text = text.replace('com.cinemamod.mcef.MCEFClient', 'de.keksuccino.rinku.RinkuClient')
+                    text = text.replace('com.cinemamod.mcef.MCEF', 'de.keksuccino.rinku.Rinku')
+                    text = text.replace('com.cinemamod.mcef.CefUtil', 'de.keksuccino.rinku.util.CefUtil')
+                    text = text.replace('MCEFBrowser', 'RinkuBrowser')
+                    text = text.replace('MCEFClient', 'RinkuClient')
+                    text = text.replace('MCEF', 'Rinku')
+                    text = text.replace('getTextureLocation', 'getTextureIdentifier')
+                    // Identifier → ResourceLocation
+                    text = text.replace('net.minecraft.util.Identifier', 'net.minecraft.resources.ResourceLocation')
+                    text = text.replace('net.minecraft.resources.Identifier', 'net.minecraft.resources.ResourceLocation')
+                    // NeoForge → Forge class names
+                    text = text.replace('NeoForge.EVENT_BUS', 'MinecraftForge.EVENT_BUS')
+                    // IEventBus → remove parameter
+                    text = text.replace('public WebGUIMod(IEventBus modBus)', 'public WebGUIMod()')
+                    text = text.replace('public static void initClient(IEventBus modBus)', 'public static void initClient()')
+                    text = text.replace('public static void register(IEventBus modBus)', 'public static void register()')
+                    text = text.replace('public static void registerPayloadTypes(IEventBus modBus)', 'public static void registerPayloadTypes()')
+                    text = text.replace('WebviewNetworking.registerPayloadTypes(modBus)', 'WebviewNetworking.registerPayloadTypes()')
+                    text = text.replace('WebGUIKeys.register(modBus)', 'WebGUIKeys.register()')
+                    text = text.replace('WebGUIClient.initClient(modBus)', 'WebGUIClient.initClient()')
+                    // NeoForge payload registration → ForgePackets
+                    text = text.replaceAll(/public static void registerPayloadTypes\(\) \{[\s\S]*?\n    \}/, 'public static void registerPayloadTypes() {\n        ForgePackets.register();\n    }')
+                    text = text.replaceAll(/public static void registerClientReceivers\([^\)]*\) \{[\s\S]*?\n    \}/, 'public static void registerClientReceivers() {}')
+                    if (f.name == 'WebGUIKeys.java') {
+                        text = text.replaceAll(/public static void register\(\) \{[\s\S]*?\n    \}/, 'public static void register() {\n        net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext.get().getModEventBus().addListener(WebGUIKeys::onRegisterKeyMappings);\n    }')
+                    }
+                    // Add missing MinecraftForge import (AFTER all replacements that might add MinecraftForge.EVENT_BUS)
+                    if (text.contains('MinecraftForge.EVENT_BUS') && !text.contains('import net.minecraftforge.common.MinecraftForge;')) {
+                        text = text.replace('package land.webgui;', 'package land.webgui;\n\nimport net.minecraftforge.common.MinecraftForge;')
+                    }
+                    // ClientTickEvent.Post → TickEvent.ClientTickEvent
+                    text = text.replace('ClientTickEvent.Post event', 'TickEvent.ClientTickEvent event')
+                    text = text.replace('private static void onClientTick(TickEvent.ClientTickEvent event) {', 'private static void onClientTick(TickEvent.ClientTickEvent event) {\n        if (event.phase != TickEvent.Phase.END) return;')
+                    // Make handleOpenPayload package-private
+                    text = text.replace('private static void handleOpenPayload', 'static void handleOpenPayload')
+                    // NeoForge send methods → ForgePackets
+                    text = text.replace('PacketDistributor.sendToPlayer(player, new WebviewPayloads.OpenWebS2CPayload(', 'ForgePackets.sendToPlayer(player, new ForgePackets.OpenWebS2CPacket(')
+                    text = text.replace('PacketDistributor.sendToPlayer(player, new WebviewPayloads.WebUIMainMenuPayload(', 'ForgePackets.sendToPlayer(player, new ForgePackets.MainMenuS2CPacket(')
+                    text = text.replace('PacketDistributor.sendToPlayer(player, new WebviewPayloads.WebviewEmitS2CPayload(', 'ForgePackets.sendToPlayer(player, new ForgePackets.EmitS2CPacket(')
+                    text = text.replace('PacketDistributor.sendToPlayer(player, new WebviewPayloads.WebviewEntityContextS2CPayload(', 'ForgePackets.sendToPlayer(player, new ForgePackets.EntityContextS2CPacket(')
+                    text = text.replace('PacketDistributor.sendToPlayer(player, new WebviewPayloads.WebviewTrustedOriginsS2CPayload(', 'ForgePackets.sendToPlayer(player, new ForgePackets.TrustedOriginsS2CPacket(')
+                    text = text.replace('PacketDistributor.sendToServer(new WebviewPayloads.WebviewPageEventC2SPayload(', 'ForgePackets.sendToServer(new ForgePackets.PageEventC2SPacket(')
+                    text = text.replace('ClientPacketDistributor.sendToServer(new WebviewPayloads.WebviewPageEventC2SPayload(', 'ForgePackets.sendToServer(new ForgePackets.PageEventC2SPacket(')
+                    // Remove/replace NeoForge-specific imports
+                    text = text.replace('import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;', '')
+                    text = text.replace('import net.neoforged.api.distmarker.Dist;', 'import net.minecraftforge.api.distmarker.Dist;')
+                    // ResourceLocation.fromNamespaceAndPath → new ResourceLocation
+                    text = text.replace('ResourceLocation.fromNamespaceAndPath(', 'new ResourceLocation(')
+                    f.text = text
+                }
+            }
+        }
+    }
+    afterEvaluate {
+        tasks.named('compileJava').configure { dependsOn 'patchForgeSources' }
+        tasks.named('patchForgeSources').configure { dependsOn 'stonecutterGenerate' }
+    }
 } else {
     apply plugin: 'net.neoforged.moddev'
 }
@@ -49,8 +143,14 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
-    if (sc_loader != "fabric") {
+    if (sc_loader == "neoforge") {
         maven { url = 'https://maven.neoforged.net/releases' }
+    }
+    if (sc_loader == "forge") {
+        minecraft.mavenizer(it)
+        maven fg.forgeMaven
+        maven fg.minecraftLibsMaven
+        maven { url = 'https://maven.minecraftforge.net/' }
     }
 }
 
@@ -60,8 +160,53 @@ if (sc_loader == "fabric") {
         mappings  "net.fabricmc:yarn:${yarn_mappings}:v2"
         modImplementation "net.fabricmc:fabric-loader:${loader_version}"
         modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-        include(modImplementation("maven.modrinth:mcef-keksuccino:${mcef_version}"))
+        include(modImplementation("maven.modrinth:mcef:${mcef_version}"))
     }
+} else if (sc_loader == "forge") {
+    minecraft {
+        runs {
+            configureEach {
+                workingDir = layout.projectDirectory.dir('run')
+                systemProperty 'forge.logging.markers', 'REGISTRIES'
+                systemProperty 'forge.logging.console.level', 'debug'
+                mods {
+                    webgui {
+                        source sourceSets.main
+                    }
+                }
+            }
+            register('client')
+            register('server')
+        }
+        mappings channel: 'official', version: "${minecraft_version}"
+    }
+    dependencies {
+        implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+        // Use Rinku (JCEF) instead of MCEF for Forge 1.20.1
+        implementation files("C:/Users/nonza/Documents/JCEF/Rinku-1.20.1/forge/build/libs/rinku-1.0.0.jar")
+    }
+    // Remap the dev jar to SRG names for runtime on legacy Forge 1.20.1
+    renamer.classes(tasks.named('jar', Jar)) {
+        archiveClassifier = 'runtime'
+        mappings renamer.mixin.generatedMappings
+    }
+    renamer.mappings(minecraft.dependency.toSrg)
+    renamer.enableMixinRefmaps {
+        config 'webgui.mixins.json'
+    }
+    // Copy Rinku jar to run/mods so Forge loads it as a mod during runClient
+    tasks.register('copyRinkuToMods', Copy) {
+        from "C:/Users/nonza/Documents/JCEF/Rinku-1.20.1/forge/build/libs/rinku-1.0.0.jar"
+        into layout.projectDirectory.dir('run/mods')
+        rename { 'rinku.jar' }
+    }
+    afterEvaluate {
+        tasks.matching { it.name == 'prepareRunClient' || it.name == 'prepareRunServer' }.configureEach {
+            dependsOn 'copyRinkuToMods'
+        }
+    }
+    // Add Forge-specific source directory (ForgePackets.java)
+    sourceSets.main.java.srcDir 'src/main/java'
 } else {
     neoForge {
         version = project.neoforge_version
@@ -88,7 +233,7 @@ if (sc_loader == "fabric") {
         }
     }
     dependencies {
-        implementation "maven.modrinth:mcef-keksuccino:${mcef_version}"
+        implementation "maven.modrinth:mcef:${mcef_version}"
     }
 }
 
@@ -103,6 +248,7 @@ dependencies {
         // Runtime-only: it never affects compilation of the shared test sources.
         testRuntimeOnly "net.fabricmc:fabric-loader-junit:${loader_version}"
     }
+    // Forge: no launch test runtime — the metadata test covers mod declaration.
 }
 
 test {
@@ -110,6 +256,10 @@ test {
         if (sc_loader == "fabric") {
             // Fabric runs the launch test in the separate `launchTest` task so
             // the default `build` stays fast and doesn't need game assets.
+            excludeTags 'launch'
+        }
+        if (sc_loader == "forge") {
+            // Forge has no in-process launch test runtime; exclude launch tests.
             excludeTags 'launch'
         }
         // NeoForge: moddev's unitTest boots FML in this task, so the launch test
@@ -139,15 +289,29 @@ processResources {
     inputs.property 'version',         project.version
     inputs.property 'minecraft_range', project.minecraft_range
     if (sc_loader == "fabric") {
-        // Don't ship NeoForge metadata in the Fabric jar, or loaders/Modrinth
-        // mis-detect it as a NeoForge mod too.
+        // Don't ship NeoForge/Forge metadata in the Fabric jar, or loaders/Modrinth
+        // mis-detect it as a NeoForge/Forge mod too.
         exclude 'META-INF/neoforge.mods.toml'
+        exclude 'META-INF/mods.toml'
         filesMatching('fabric.mod.json') {
             expand version: project.version, minecraft_range: project.minecraft_range
         }
-    } else {
-        // Likewise, keep Fabric metadata out of the NeoForge jar.
+    } else if (sc_loader == "forge") {
+        // Keep Fabric and NeoForge metadata out of the Forge jar.
         exclude 'fabric.mod.json'
+        exclude 'META-INF/neoforge.mods.toml'
+        filesMatching('META-INF/mods.toml') {
+            expand version: project.version, minecraft_range: project.minecraft_range
+        }
+        filesMatching('pack.mcmeta') { expand version: project.version }
+        // Forge 1.20.1 runs on Java 17, not 21.
+        filesMatching('webgui.mixins.json') {
+            filter { it.replace('JAVA_21', 'JAVA_17') }
+        }
+    } else {
+        // Likewise, keep Fabric and Forge metadata out of the NeoForge jar.
+        exclude 'fabric.mod.json'
+        exclude 'META-INF/mods.toml'
         filesMatching('META-INF/neoforge.mods.toml') {
             expand version: project.version, minecraft_range: project.minecraft_range
         }

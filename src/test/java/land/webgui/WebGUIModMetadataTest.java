@@ -56,7 +56,8 @@ class WebGUIModMetadataTest {
     void declaresModAndEntrypointsForActiveLoader() throws Exception {
         String fabric = findOurs("fabric.mod.json", "land.webgui.WebGUIMod");
         String neoforge = findOurs("META-INF/neoforge.mods.toml", "modId = \"" + MOD_ID + "\"");
-        Assumptions.assumeTrue(fabric != null || neoforge != null,
+        String forge = findOurs("META-INF/mods.toml", "modId = \"" + MOD_ID + "\"");
+        Assumptions.assumeTrue(fabric != null || neoforge != null || forge != null,
                 "our loader metadata is not exposed on the dev/test classpath — skipping "
                         + "(the Fabric launch test covers loader parsing directly)");
 
@@ -75,6 +76,14 @@ class WebGUIModMetadataTest {
             assertContains(neoforge, "modId = \"neoforge\"", "depends on neoforge");
             assertContains(neoforge, "modId = \"minecraft\"", "depends on minecraft");
             assertTrue(!neoforge.contains("${version}"),
+                    "version placeholder should be expanded by processResources");
+        }
+        if (forge != null) {
+            assertContains(forge, "javafml", "uses the javafml loader");
+            assertContains(forge, "webgui.mixins.json", "registers the mixin config");
+            assertContains(forge, "modId = \"forge\"", "depends on forge");
+            assertContains(forge, "modId = \"minecraft\"", "depends on minecraft");
+            assertTrue(!forge.contains("${version}"),
                     "version placeholder should be expanded by processResources");
         }
     }

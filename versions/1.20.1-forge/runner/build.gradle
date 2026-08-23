@@ -1,0 +1,81 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+version = '1.0'
+group = 'land.webgui.runner'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: minecraft_version
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            // Point to the main project's compiled classes and resources
+            mods {
+                webgui {
+                    source sourceSets.main
+                }
+            }
+            // Add the main project's classes to the classpath
+            arg '--mixin.config=webgui.mixins.json'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.minecraftforge.net/' }
+    flatDir {
+        dirs 'libs'
+    }
+    maven {
+        url = "file://C:/Users/nonza/Documents/JCEF/Rinku-1.20.1/forge/build/libs"
+    }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // Rinku (JCEF browser library) — use fg.deobf to remap SRG → official mappings
+    implementation fg.deobf("rinku:rinku:1.0.0")
+    // WebGUI mod classes (compiled by the main Stonecutter build)
+    implementation files("../build/classes/java/main")
+    implementation files("../build/resources/main")
+    // Rinku at runtime
+    runtimeOnly fg.deobf("rinku:rinku:1.0.0")
+}
+
+// Copy WebGUI classes and resources from the main build into the runner's source set
+tasks.register('copyWebguiClasses', Copy) {
+    from "../build/classes/java/main"
+    into layout.buildDirectory.dir('classes/java/main')
+}
+tasks.register('copyWebguiResources', Copy) {
+    from "../build/resources/main"
+    into layout.buildDirectory.dir('resources/main')
+}
+
+// Copy deobfuscated Rinku to run/mods so Forge loads it as a mod
+tasks.register('copyRinkuToMods', Copy) {
+    from configurations.runtimeClasspath.filter { it.name.contains('rinku') && it.name.contains('mapped') }
+    into layout.projectDirectory.dir('run/mods')
+    rename { 'rinku.jar' }
+}
+
+afterEvaluate {
+    tasks.matching { it.name == 'prepareRunClient' }.configureEach {
+        dependsOn 'copyRinkuToMods', 'copyWebguiClasses', 'copyWebguiResources'
+    }
+    tasks.matching { it.name == 'prepareRunClientCompile' }.configureEach {
+        dependsOn 'copyWebguiClasses', 'copyWebguiResources'
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
